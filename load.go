@@ -14,6 +14,10 @@ import (
 
 var flagfile = flag.String("flagfile", "", "a file from which to load flags")
 
+func SetFlagfile(file *string) {
+	flagfile = file
+}
+
 func Load() {
 	flag.Parse()
 	if len(*flagfile) == 0 {
