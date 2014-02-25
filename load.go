@@ -35,10 +35,15 @@ func Load() {
 			}
 			defer fh.Close()
 
+			var section string
 			scanner := bufio.NewScanner(fh)
 			for scanner.Scan() {
 				option := strings.TrimSpace(scanner.Text())
 				if len(option) == 0 || option[0] == '#' {
+					continue
+				}
+				if option[0] == '[' && option[len(option)-1] == ']' {
+					section = option[1:len(option)-1]
 					continue
 				}
 				parts := strings.SplitN(option, "=", 2)
@@ -46,6 +51,9 @@ func Load() {
 					panic(fmt.Sprintf("Unable to parse flagfile line '%s'", option))
 				}
 				name := strings.TrimSpace(parts[0])
+				if len(section) != 0 {
+					name = section + "." + name
+				}
 				if set_flags[name] {
 					continue
 				}
