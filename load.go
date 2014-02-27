@@ -10,16 +10,75 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 )
 
-var flagfile = flag.String("flagfile", "", "a file (or multiple files, "+
-	"comma-separated) from which to load flags")
+var (
+	flagfile = flag.String("flagfile", "", "a file (or multiple files, "+
+		"comma-separated) from which to load flags")
+
+	alias_mtx sync.Mutex
+	aliases   = make(map[string]string)
+	loaded    = false
+	set_flags = make(map[string]bool)
+)
+
+func Alias(new_flag_name, old_flag_name string) {
+	alias_mtx.Lock()
+	defer alias_mtx.Unlock()
+	if loaded {
+		panic(fmt.Errorf("flags already loaded"))
+	}
+	existing, exists := aliases[new_flag_name]
+	if exists {
+		panic(fmt.Errorf("flag %#v is already defined to be %#v",
+			new_flag_name, existing))
+	}
+	aliases[new_flag_name] = old_flag_name
+}
+
+func ActivelySet(flag_name string) bool {
+	alias_mtx.Lock()
+	defer alias_mtx.Unlock()
+	return set_flags[flag_name]
+}
 
 func Load() {
-	flag.Parse()
+	alias_mtx.Lock()
+	defer alias_mtx.Unlock()
+	if loaded {
+		panic(fmt.Errorf("flags already loaded"))
+	}
 
-	set_flags := map[string]bool{}
+	for new_alias, flag_name := range aliases {
+		existing_flag := flag.Lookup(flag_name)
+		if existing_flag == nil {
+			panic(fmt.Errorf("flag %#v doesn't exist", flag_name))
+		}
+		flag.Var(existing_flag.Value, new_alias, existing_flag.Usage)
+	}
+
+	flag.Parse()
+	loaded = true
+
+	for alias, flag_name := range aliases {
+		alias_flag := flag.Lookup(alias)
+		real_flag := flag.Lookup(flag_name)
+		if alias_flag == nil {
+			panic(fmt.Errorf("flag %#v doesn't exist", alias))
+		}
+		if real_flag == nil {
+			panic(fmt.Errorf("flag %#v doesn't exist", flag_name))
+		}
+		if alias_flag.Value.String() != real_flag.Value.String() {
+			panic(fmt.Errorf("aliased flags %#v and %#v don't match",
+				flag_name, alias))
+		}
+	}
+
+	cmdline_set_flags := map[string]bool{}
 	flag.Visit(func(f *flag.Flag) {
+		cmdline_set_flags[f.Name] = true
 		set_flags[f.Name] = true
 	})
 
@@ -43,7 +102,10 @@ func Load() {
 					continue
 				}
 				if option[0] == '[' && option[len(option)-1] == ']' {
-					section = option[1:len(option)-1]
+					section = option[1:len(option)-1] + "."
+					if section == "main." { // main means no section
+						section = ""
+					}
 					continue
 				}
 				parts := strings.SplitN(option, "=", 2)
@@ -52,9 +114,9 @@ func Load() {
 				}
 				name := strings.TrimSpace(parts[0])
 				if len(section) != 0 {
-					name = section + "." + name
+					name = section + name
 				}
-				if set_flags[name] {
+				if cmdline_set_flags[name] {
 					continue
 				}
 				value := strings.TrimSpace(parts[1])
@@ -63,10 +125,19 @@ func Load() {
 					panic(fmt.Sprintf("Unable to set flag '%s' to '%s': %s",
 						name, value, err))
 				}
+				set_flags[name] = true
 			}
 			if err = scanner.Err(); err != nil {
 				panic(fmt.Sprintf("unable to read flagfile '%s': %s", file, err))
 			}
 		}()
+	}
+
+	for alias, flag_name := range aliases {
+		if set_flags[flag_name] {
+			set_flags[alias] = true
+		} else if set_flags[alias] {
+			set_flags[flag_name] = true
+		}
 	}
 }
