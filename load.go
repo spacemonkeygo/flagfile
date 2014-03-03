@@ -50,12 +50,25 @@ func Load() {
 		panic(fmt.Errorf("flags already loaded"))
 	}
 
-	for new_alias, flag_name := range aliases {
-		existing_flag := flag.Lookup(flag_name)
-		if existing_flag == nil {
-			panic(fmt.Errorf("flag %#v doesn't exist", flag_name))
+	last_alias_count := 0
+	for {
+		current_alias_count := len(aliases)
+		if current_alias_count == 0 || current_alias_count == last_alias_count {
+			break
 		}
-		flag.Var(existing_flag.Value, new_alias, existing_flag.Usage)
+		last_alias_count = current_alias_count
+
+		for new_alias, flag_name := range aliases {
+			existing_flag := flag.Lookup(flag_name)
+			if existing_flag == nil {
+				continue
+			}
+			flag.Var(existing_flag.Value, new_alias, existing_flag.Usage)
+			delete(aliases, new_alias)
+		}
+	}
+	for _, flag_name := range aliases {
+		panic(fmt.Errorf("flag %#v doesn't exist", flag_name))
 	}
 
 	flag.Parse()
