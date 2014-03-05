@@ -1,16 +1,15 @@
-//
-// Copyright (C) 2013 Space Monkey, Inc.
-//
+// Copyright (C) 2013-2014 Space Monkey, Inc.
 
 package flagfile
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/SpaceMonkeyInc/flagfile/parser"
 )
 
 var (
@@ -95,55 +94,29 @@ func Load() {
 		set_flags[f.Name] = true
 	})
 
-	files := strings.Split(*flagfile, ",")
-	for _, file := range files {
+	for _, file := range strings.Split(*flagfile, ",") {
 		if len(file) == 0 {
 			continue
 		}
-		func() {
-			fh, err := os.Open(file)
+		fh, err := os.Open(file)
+		if err != nil {
+			panic(fmt.Errorf("unable to open flagfile '%s': %s", file, err))
+		}
+		err = parser.Parse(fh, func(name, value string) {
+			if cmdline_set_flags[name] {
+				return
+			}
+			err := flag.Set(name, value)
 			if err != nil {
-				panic(fmt.Sprintf("unable to open flagfile '%s': %s", file, err))
+				panic(fmt.Errorf("Unable to set flag '%s' to '%s': %s",
+					name, value, err))
 			}
-			defer fh.Close()
-
-			var section string
-			scanner := bufio.NewScanner(fh)
-			for scanner.Scan() {
-				option := strings.TrimSpace(scanner.Text())
-				if len(option) == 0 || option[0] == '#' {
-					continue
-				}
-				if option[0] == '[' && option[len(option)-1] == ']' {
-					section = option[1:len(option)-1] + "."
-					if section == "main." { // main means no section
-						section = ""
-					}
-					continue
-				}
-				parts := strings.SplitN(option, "=", 2)
-				if len(parts) != 2 {
-					panic(fmt.Sprintf("Unable to parse flagfile line '%s'", option))
-				}
-				name := strings.TrimSpace(parts[0])
-				if len(section) != 0 {
-					name = section + name
-				}
-				if cmdline_set_flags[name] {
-					continue
-				}
-				value := strings.TrimSpace(parts[1])
-				err := flag.Set(name, value)
-				if err != nil {
-					panic(fmt.Sprintf("Unable to set flag '%s' to '%s': %s",
-						name, value, err))
-				}
-				set_flags[name] = true
-			}
-			if err = scanner.Err(); err != nil {
-				panic(fmt.Sprintf("unable to read flagfile '%s': %s", file, err))
-			}
-		}()
+			set_flags[name] = true
+		})
+		fh.Close()
+		if err != nil {
+			panic(fmt.Errorf("'%s': %s", file, err))
+		}
 	}
 
 	for alias, flag_name := range aliases {

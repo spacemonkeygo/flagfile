@@ -1,6 +1,4 @@
-//
-// Copyright (C) 2013 Space Monkey, Inc.
-//
+// Copyright (C) 2014 Space Monkey, Inc.
 
 package parser
 
