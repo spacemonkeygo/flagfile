@@ -16,7 +16,7 @@ func Parse(in io.Reader, cb func(key, value string)) error {
 	for scanner.Scan() {
 		lineno += 1
 		option := strings.TrimSpace(scanner.Text())
-		if len(option) == 0 || option[0] == '#' {
+		if len(option) == 0 || option[0] == '#' || option[0] == ';' {
 			continue
 		}
 		if option[0] == '[' && option[len(option)-1] == ']' {
