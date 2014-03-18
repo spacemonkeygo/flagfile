@@ -36,6 +36,7 @@ func mustSet(flag_name, flag_value string) {
 }
 
 func Load() {
+	defer flagOut()
 	mtx.Lock()
 	defer mtx.Unlock()
 	if loaded {

@@ -24,7 +24,7 @@ func Serialize(values map[string]string, out io.Writer) error {
 	for _, key := range keys {
 		idx := strings.LastIndex(key, ".")
 		section := key[:idx]
-		key = key[idx+1:]
+		short_key := key[idx+1:]
 		if section != last_section {
 			if last_section != "" {
 				_, err := fmt.Fprintf(out, "\n")
@@ -38,7 +38,7 @@ func Serialize(values map[string]string, out io.Writer) error {
 			}
 			last_section = section
 		}
-		_, err := fmt.Fprintf(out, "%s = %s\n", key, fixed_vals[key])
+		_, err := fmt.Fprintf(out, "%s = %s\n", short_key, fixed_vals[key])
 		if err != nil {
 			return err
 		}
