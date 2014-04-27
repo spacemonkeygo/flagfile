@@ -1,11 +1,10 @@
 // Copyright (C) 2013 Space Monkey, Inc.
 
-package flagfile_test
+package flagfile
 
 import (
+	"testing"
 	"time"
-
-	"github.com/SpaceMonkeyGo/flagfile"
 )
 
 func ExampleLoad(t *testing.T) {
@@ -20,10 +19,10 @@ func ExampleLoad(t *testing.T) {
 	//     prefix.value
 	//     prefix.time
 	//     prefix.what
-	flagfile.Setup("prefix.", &Config)
+	Setup("prefix.", &Config)
 
 	// this loads the flags into config. flagfile automatically adds a flag
 	// named flagfile, which when specified will load the key/value pairs in
 	// that file as if they were specified on the command line.
-	flagfile.Load()
+	Load()
 }
