@@ -24,6 +24,13 @@ func getParams(tags reflect.StructTag) (defaultStr, usage string) {
 	return
 }
 
+// Setup is meant to be called in init or in some other place prior to
+// flagfile.Load(). Setup will take a struct and through reflect, create flags
+// for all of the fields in the struct. The given prefix is added to all of
+// the discovered flags. Setup doesn't return any value, but sets up the flag
+// system to mutate the given struct when flag.Parse/flagfile.Load is called.
+//
+// If a prefix is non-zero length, it is joined with a separating period.
 func Setup(prefix string, x interface{}) {
 	rv := reflect.ValueOf(x).Elem()
 	if rv.Kind() != reflect.Struct {
@@ -36,7 +43,10 @@ func Setup(prefix string, x interface{}) {
 			continue
 		}
 		ftyp := typ.Field(i)
-		flagName := prefix + strings.ToLower(ftyp.Name)
+		flagName := strings.ToLower(ftyp.Name)
+		if len(prefix) > 0 {
+			flagName = fmt.Sprintf("%s.%s", prefix, flagName)
+		}
 		defaultStr, usage := getParams(ftyp.Tag)
 		switch fvar := field.Addr().Interface().(type) {
 		case *bool:

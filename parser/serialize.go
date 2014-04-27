@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+// Serialize is the inverse of Parse. It automatically sorts the given keys and
+// makes sections.
 func Serialize(values map[string]string, out io.Writer) error {
 	keys := make([]string, 0, len(values))
 	fixed_vals := make(map[string]string, len(values))

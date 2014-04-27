@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func ExampleLoad(t *testing.T) {
+func ExampleSetup(t *testing.T) {
 	// make a config var to hold some flags
 	var Config struct {
 		Value int           `default:"20" usage:"this is some value"`
@@ -19,7 +19,7 @@ func ExampleLoad(t *testing.T) {
 	//     prefix.value
 	//     prefix.time
 	//     prefix.what
-	Setup("prefix.", &Config)
+	Setup("prefix", &Config)
 
 	// this loads the flags into config. flagfile automatically adds a flag
 	// named flagfile, which when specified will load the key/value pairs in

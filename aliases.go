@@ -12,6 +12,10 @@ var (
 	alias_set   = make(map[string]bool)
 )
 
+// Alias links two flag names together. If you have a particular flag that
+// needs to be configured by one flag name in one deployment and another name
+// in another deployment, Alias lets you link the two flag names together. It
+// is an error to configure both aliases with differing values.
 func Alias(new_flag_name, old_flag_name string) {
 	mtx.Lock()
 	defer mtx.Unlock()
@@ -27,6 +31,8 @@ func isAlias(flag_name string) bool {
 	return alias_set[flag_name]
 }
 
+// IsAlias returns true if the flag name is just an alias. False if the flag
+// was defined normally.
 func IsAlias(flag_name string) bool {
 	mtx.Lock()
 	defer mtx.Unlock()

@@ -21,6 +21,8 @@ var (
 	set_flags = make(map[string]bool)
 )
 
+// IsActivelySet returns whether or not the user configured the given flag.
+// The value is false if the flag was not set by commandline or flagfile.
 func IsActivelySet(flag_name string) bool {
 	mtx.Lock()
 	defer mtx.Unlock()
@@ -35,6 +37,8 @@ func mustSet(flag_name, flag_value string) {
 	}
 }
 
+// Load is the flagfile equivalent/replacement for flag.Parse()
+// Call once at program start.
 func Load() {
 	defer flagOut()
 	mtx.Lock()
