@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/SpaceMonkeyInc/flagfile/parser"
+	"github.com/SpaceMonkeyGo/flagfile/parser"
 )
 
 var (

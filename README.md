@@ -15,7 +15,7 @@ Precedence
 Usage
 -----
 
-See the examples in [godoc](http://godoc.org/github.com/SpaceMonkeyInc/flagfile)
+See the examples in [godoc](http://godoc.org/github.com/SpaceMonkeyGo/flagfile)
 
 
 Flagfile format

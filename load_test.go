@@ -1,13 +1,11 @@
-//
 // Copyright (C) 2013 Space Monkey, Inc.
-//
 
 package flagfile_test
 
 import (
 	"time"
 
-	"github.com/SpaceMonkeyInc/flagfile"
+	"github.com/SpaceMonkeyGo/flagfile"
 )
 
 func ExampleLoad(t *testing.T) {
