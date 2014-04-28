@@ -1,5 +1,7 @@
 // Copyright (C) 2014 Space Monkey, Inc.
 
+// Package parser provides parsing and serializing routines for the flagfile
+// on-disk format
 package parser
 
 import (
