@@ -20,7 +20,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/SpaceMonkeyGo/flagfile/parser"
+	"github.com/spacemonkeygo/flagfile/parser"
 )
 
 var (

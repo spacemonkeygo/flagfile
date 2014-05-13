@@ -54,7 +54,7 @@ If a section is specified in square braces, all of the following flags up until
 the next section are effectively prefixed with the section name followed by a
 period.
 
-See github.com/SpaceMonkeyGo/flagfile/parser for more information on the file
+See github.com/spacemonkeygo/flagfile/parser for more information on the file
 format.
 */
 package flagfile

@@ -1,6 +1,6 @@
 # flagfile
 
-Please see http://godoc.org/github.com/SpaceMonkeyGo/flagfile for info
+Please see http://godoc.org/github.com/spacemonkeygo/flagfile for info
 
 ### License
 
