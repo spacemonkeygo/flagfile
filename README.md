@@ -1,4 +1,4 @@
-# flagfile
+# flagfile [![Build Status](https://api.travis-ci.org/spacemonkeygo/flagfile.svg?branch=master)](https://travis-ci.org/spacemonkeygo/flagfile)
 
 Please see http://godoc.org/github.com/spacemonkeygo/flagfile for info
 
