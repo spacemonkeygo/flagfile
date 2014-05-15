@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package flagfile
+package utils
 
 import (
 	"testing"
 	"time"
+
+	"github.com/spacemonkeygo/flagfile"
 )
 
 func ExampleSetup(t *testing.T) {
@@ -36,5 +38,5 @@ func ExampleSetup(t *testing.T) {
 	// this loads the flags into config. flagfile automatically adds a flag
 	// named flagfile, which when specified will load the key/value pairs in
 	// that file as if they were specified on the command line.
-	Load()
+	flagfile.Load()
 }
