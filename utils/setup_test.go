@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package utils_test
 
 import (
 	"testing"
 	"time"
 
 	"github.com/spacemonkeygo/flagfile"
+	"github.com/spacemonkeygo/flagfile/utils"
 )
 
 func ExampleSetup(t *testing.T) {
@@ -33,7 +34,7 @@ func ExampleSetup(t *testing.T) {
 	//     prefix.value
 	//     prefix.time
 	//     prefix.what
-	Setup("prefix", &Config)
+	utils.Setup("prefix", &Config)
 
 	// this loads the flags into config. flagfile automatically adds a flag
 	// named flagfile, which when specified will load the key/value pairs in
