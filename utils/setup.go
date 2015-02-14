@@ -63,7 +63,12 @@ func Setup(prefix string, x interface{}) {
 			flagName = fmt.Sprintf("%s.%s", prefix, flagName)
 		}
 		defaultStr, usage := getParams(ftyp.Tag)
-		switch fvar := field.Addr().Interface().(type) {
+		ivar := field.Addr().Interface()
+		if v, ok := ivar.(flag.Value); ok {
+			flag.Var(v, flagName, usage)
+			continue
+		}
+		switch fvar := ivar.(type) {
 		case *bool:
 			defaultVal, err := strconv.ParseBool(defaultStr)
 			if err != nil {
