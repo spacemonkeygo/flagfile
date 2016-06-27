@@ -49,9 +49,30 @@ func mustSet(flag_name, flag_value string) {
 	}
 }
 
+type Option struct {
+	flagfilePath string
+	skipArgs     bool
+}
+
+// Flagfile tells Load to find default values from the flagfile at path (which
+// will be overridden by user-provided values from arguments, if provided).
+func Flagfile(path string) Option { return Option{flagfilePath: path} }
+
+// OptFlagfile is like Flagfile but does not fail if the path doesn't exist.
+func OptFlagfile(path string) Option {
+	if _, err := os.Stat(path); err == nil {
+		return Option{flagfilePath: path}
+	}
+	return Option{}
+}
+
+// SkipArgs will tell Load to not call flag.Parse and otherwise avoid looking
+// at process arguments
+func SkipArgs() Option { return Option{skipArgs: true} }
+
 // Load is the flagfile equivalent/replacement for flag.Parse()
 // Call once at program start.
-func Load() {
+func Load(opts ...Option) {
 	defer flagOut()
 	mtx.Lock()
 	defer mtx.Unlock()
@@ -61,16 +82,32 @@ func Load() {
 
 	defineAliases()
 
-	flag.Parse()
-	loaded = true
+	var flagfiles []string
+	var skipArgs bool
+	for _, opt := range opts {
+		if opt.flagfilePath != "" {
+			flagfiles = append(flagfiles, opt.flagfilePath)
+		}
+		if opt.skipArgs {
+			skipArgs = true
+		}
+	}
 
 	cmdline_set_flags := map[string]bool{}
-	flag.Visit(func(f *flag.Flag) {
-		cmdline_set_flags[f.Name] = true
-		set_flags[f.Name] = true
-	})
+	if !skipArgs {
+		flag.Parse()
+		flag.Visit(func(f *flag.Flag) {
+			cmdline_set_flags[f.Name] = true
+			set_flags[f.Name] = true
+		})
+	}
+	loaded = true
 
-	for _, file := range strings.Split(*flagfile, ",") {
+	flagfiles = append(flagfiles, strings.Split(*flagfile, ",")...)
+
+	for len(flagfiles) > 0 {
+		file := flagfiles[0]
+		flagfiles = flagfiles[1:]
 		if len(file) == 0 {
 			continue
 		}
@@ -79,6 +116,11 @@ func Load() {
 			panic(fmt.Errorf("unable to open flagfile '%s': %s", file, err))
 		}
 		err = parser.Parse(fh, func(name, value string) {
+			if name == "flagfile" {
+				// allow flagfile chaining
+				flagfiles = append(flagfiles, value)
+				return
+			}
 			// command line flags override file flags
 			if cmdline_set_flags[name] {
 				return
