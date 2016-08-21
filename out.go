@@ -50,6 +50,35 @@ func Dump(out io.Writer) error {
 	})
 	return parser.Serialize(vals, out)
 }
+// DumpMyFlag will write all flags contained in the flags array to the given io.Writer in the flagfile
+// serialization format for later parsing.
+func DumpMyFlags(myflags []string,out io.Writer) error{
+	mtx.Lock()
+	defer mtx.Unlock()
+	vals := make(map[string]string)
+
+	flag.VisitAll(func (f *flag.Flag){
+		for _,flg := range myflags {
+			if f.Name == flg {
+				vals[f.Name] = f.Value.String()
+			}
+		}
+
+	})
+	return parser.Serialize(vals,out)
+}
+
+func DumpMyFlagsToPath(myflags []string,path string) error{
+	fh, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+		0600)
+	if err != nil {
+		return err
+	}
+	defer fh.Close()
+
+	return DumpMyFlags(myflags,fh)
+}
+
 
 // DumpToPath simply calls Dump on a new filehandle (O_CREATE|O_TRUNC) for the
 // given path
