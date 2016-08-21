@@ -68,6 +68,8 @@ func DumpMyFlags(myflags []string,out io.Writer) error{
 	return parser.Serialize(vals,out)
 }
 
+// DumpToPath simply calls DumpMyFlags on a new filehandle (O_CREATE|O_TRUNC) for the
+// given path
 func DumpMyFlagsToPath(myflags []string,path string) error{
 	fh, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 		0600)
