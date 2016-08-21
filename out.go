@@ -92,4 +92,5 @@ func DumpToPath(path string) error {
 	}
 	defer fh.Close()
 	return Dump(fh)
+	
 }
