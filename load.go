@@ -52,6 +52,8 @@ func mustSet(flag_name, flag_value string) {
 type Option struct {
 	flagfilePath string
 	skipArgs     bool
+	short_usage  func()
+	full_usage   func()
 }
 
 // Flagfile tells Load to find default values from the flagfile at path (which
@@ -64,6 +66,16 @@ func OptFlagfile(path string) Option {
 		return Option{flagfilePath: path}
 	}
 	return Option{}
+}
+
+// ShortUsageFunc specifies what method to run when '-h' or '--help' are found.
+func ShortUsageFunc(fn func()) Option {
+	return Option{short_usage: fn}
+}
+
+// FullUsageFunc specifies what method to run when '--help-all' is found.
+func FullUsageFunc(fn func()) Option {
+	return Option{short_usage: fn}
 }
 
 // SkipArgs will tell Load to not call flag.Parse and otherwise avoid looking
@@ -84,6 +96,8 @@ func Load(opts ...Option) {
 
 	var flagfiles []string
 	var skipArgs bool
+	short_usage := ShortUsage
+	full_usage := FullUsage
 	for _, opt := range opts {
 		if opt.flagfilePath != "" {
 			flagfiles = append(flagfiles, opt.flagfilePath)
@@ -91,11 +105,28 @@ func Load(opts ...Option) {
 		if opt.skipArgs {
 			skipArgs = true
 		}
+		if opt.short_usage != nil {
+			short_usage = opt.short_usage
+		}
+		if opt.full_usage != nil {
+			full_usage = opt.full_usage
+		}
 	}
 
 	cmdline_set_flags := map[string]bool{}
 	if !skipArgs {
-		flag.Parse()
+		flag.CommandLine.Usage = short_usage
+		args := os.Args[1:]
+		for _, arg := range args {
+			if arg == "--" {
+				break
+			}
+			if arg == "--help-all" {
+				full_usage()
+				os.Exit(2)
+			}
+		}
+		flag.CommandLine.Parse(os.Args[1:])
 		flag.Visit(func(f *flag.Flag) {
 			cmdline_set_flags[f.Name] = true
 			set_flags[f.Name] = true
