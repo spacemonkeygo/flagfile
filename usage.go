@@ -67,6 +67,9 @@ func ShortUsage() {
 		}
 		fmt.Fprint(os.Stderr, formatFlag(f), "\n")
 	})
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "  -help-all")
+	fmt.Fprintln(os.Stderr, "    \tShow all possible flags.")
 }
 
 // FullUsage outputs full usage information to stderr. All flags.

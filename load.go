@@ -121,7 +121,7 @@ func Load(opts ...Option) {
 			if arg == "--" {
 				break
 			}
-			if arg == "--help-all" {
+			if arg == "--help-all" || arg == "-help-all" {
 				full_usage()
 				os.Exit(2)
 			}
