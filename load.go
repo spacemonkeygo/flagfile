@@ -50,10 +50,11 @@ func mustSet(flag_name, flag_value string) {
 }
 
 type Option struct {
-	flagfilePath string
-	skipArgs     bool
-	short_usage  func()
-	full_usage   func()
+	flagfilePath   string
+	skipArgs       bool
+	ignoreUnknowns bool
+	short_usage    func()
+	full_usage     func()
 }
 
 // Flagfile tells Load to find default values from the flagfile at path (which
@@ -78,6 +79,11 @@ func FullUsageFunc(fn func()) Option {
 	return Option{short_usage: fn}
 }
 
+// IgnoreUnknownFlags tells Load to skip loading values for non-existent flags
+func IgnoreUnknownFlags() Option {
+	return Option{ignoreUnknowns: true}
+}
+
 // SkipArgs will tell Load to not call flag.Parse and otherwise avoid looking
 // at process arguments
 func SkipArgs() Option { return Option{skipArgs: true} }
@@ -96,6 +102,7 @@ func Load(opts ...Option) {
 
 	var flagfiles []string
 	var skipArgs bool
+	var ignoreUnknowns bool
 	short_usage := ShortUsage
 	full_usage := FullUsage
 	for _, opt := range opts {
@@ -104,6 +111,9 @@ func Load(opts ...Option) {
 		}
 		if opt.skipArgs {
 			skipArgs = true
+		}
+		if opt.ignoreUnknowns {
+			ignoreUnknowns = true
 		}
 		if opt.short_usage != nil {
 			short_usage = opt.short_usage
@@ -154,6 +164,9 @@ func Load(opts ...Option) {
 			}
 			// command line flags override file flags
 			if cmdline_set_flags[name] {
+				return
+			}
+			if ignoreUnknowns && flag.Lookup(name) == nil {
 				return
 			}
 			mustSet(name, value)
