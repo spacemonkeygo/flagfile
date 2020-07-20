@@ -70,7 +70,13 @@ func Parse(in io.Reader, cb func(key, value string)) error {
 		if len(parts) != 2 {
 			return fmt.Errorf("unable to parse flagfile line %d", lineno)
 		}
+
 		name := strings.TrimSpace(parts[0])
+		// support format like --flag=xx
+		if len(name) > 2 && name[0:2] == "--" {
+			name = name[2:]
+		}
+
 		if section != "" {
 			name = section + name
 		}

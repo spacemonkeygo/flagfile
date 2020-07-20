@@ -49,6 +49,14 @@ func mustSet(flag_name, flag_value string) {
 	}
 }
 
+func trySet(flag_name, flag_value string) error {
+	err := flag.Set(flag_name, flag_value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type Option struct {
 	flagfilePath   string
 	skipArgs       bool
@@ -169,8 +177,12 @@ func Load(opts ...Option) {
 			if ignoreUnknowns && flag.Lookup(name) == nil {
 				return
 			}
-			mustSet(name, value)
-			set_flags[name] = true
+
+			err := trySet(name, value)
+
+			if err != nil {
+				set_flags[name] = true
+			}
 		})
 		fh.Close()
 		if err != nil {
